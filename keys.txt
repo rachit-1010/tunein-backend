@@ -1,0 +1,2 @@
+MONGODB KEY = "mongodb+srv://rachitmshah10:di26ku02rachit@cluster0.48p1tzq.mongodb.net/rachit"
+YT KEY = "AIzaSyDgGYLTzUbC1Y9BGiYdvUq6wCuwoV0q5xw"
