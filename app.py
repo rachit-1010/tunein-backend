@@ -423,5 +423,6 @@ def add_song():
 	return jsonify({'success': True}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.getenv('PORT', 5000)))
+	print(os.getenv('PORT'))
+	app.run(debug=True, port=int(os.getenv('PORT', 5000)), host='0.0.0.0')
 	
