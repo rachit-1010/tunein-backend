@@ -402,8 +402,8 @@ def search_song_yt():
 	params = {"key": YT_KEY, "q": search_query, "part": 'snippet', "maxResults": 6}
 	r = pyrequests.get("https://www.googleapis.com/youtube/v3/search", params=params)
 	result = r.json()
-	# return jsonify(result), 200
-	return jsonify(sample_search_result), 200
+	return jsonify(result), 200
+	# return jsonify(sample_search_result), 200
 
 @app.route('/addSong', methods=['POST'])
 def add_song():
