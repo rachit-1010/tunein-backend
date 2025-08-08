@@ -422,6 +422,11 @@ def add_song():
 
 	return jsonify({'success': True}), 200
 
+# Home Route
+@app.route('/')
+def home():
+	return jsonify({'message': 'Welcome to the Music App Backend!'}), 200
+
 if __name__ == '__main__':
 	print(os.getenv('PORT'))
 	app.run(debug=True, port=int(os.getenv('PORT', 5000)), host='0.0.0.0')
