@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pymongo import MongoClient
 from bson import json_util
 import os
+import re
 import datetime
 import uuid
 from flask_cors import CORS
@@ -456,18 +457,41 @@ def remove_song_from_playlist():
 	collection.update_one({'playlistName': playlist_name}, {'$set': {'songs': songs, 'numSongs': numSongs}})
 	return jsonify({'success': True}), 200
 
+def parse_iso8601_duration(iso_duration):
+	match = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso_duration)
+	if not match:
+		return "0:00"
+	hours = int(match.group(1) or 0)
+	minutes = int(match.group(2) or 0)
+	seconds = int(match.group(3) or 0)
+	if hours > 0:
+		return f"{hours}:{minutes:02d}:{seconds:02d}"
+	return f"{minutes}:{seconds:02d}"
+
 @app.route('/searchSongYT', methods=['POST'])
 def search_song_yt():
-	# get the POST request data
 	data = request.get_json()
 	search_query = data['searchQuery']
-	print(search_query)
 
-	params = {"key": YT_KEY, "q": search_query, "part": 'snippet', "maxResults": 6}
+	params = {"key": YT_KEY, "q": search_query, "part": 'snippet', "maxResults": 6, "type": "video"}
 	r = pyrequests.get("https://www.googleapis.com/youtube/v3/search", params=params)
 	result = r.json()
+
+	items = result.get('items', [])
+	video_ids = [item['id']['videoId'] for item in items if 'videoId' in item.get('id', {})]
+
+	if video_ids:
+		details_params = {"key": YT_KEY, "id": ",".join(video_ids), "part": "contentDetails"}
+		details_r = pyrequests.get("https://www.googleapis.com/youtube/v3/videos", params=details_params)
+		details = details_r.json()
+		duration_map = {}
+		for item in details.get('items', []):
+			duration_map[item['id']] = parse_iso8601_duration(item['contentDetails']['duration'])
+		for item in items:
+			vid = item['id'].get('videoId', '')
+			item['duration'] = duration_map.get(vid, '0:00')
+
 	return jsonify(result), 200
-	# return jsonify(sample_search_result), 200
 
 @app.route('/addSong', methods=['POST'])
 def add_song():
